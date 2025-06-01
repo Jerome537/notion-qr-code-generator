@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notion QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #FFFFFF;
+            --bg-secondary: #F7F6F3;
+            --text-primary: #37352F;
+            --text-secondary: #787774;
+            --border-color: #E9E9E7;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            transition: var(--transition);
+        }
+
+        .container {
+            background: var(--bg-primary);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: var(--shadow);
+            transition: var(--transition);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #000;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .input-group {
+            margin-bottom: 32px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            transition: var(--transition);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        input[type="url"]:focus {
+            outline: none;
+            border-color: #2383E2;
+            box-shadow: 0 0 0 3px rgba(35, 131, 226, 0.1);
+        }
+
+        .style-section {
+            margin-bottom: 32px;
+        }
+
+        .style-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            padding: 4px;
+            gap: 4px;
+        }
+
+        .mode-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .mode-btn.active {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .color-option {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            transition: var(--transition);
+            border: 3px solid transparent;
+        }
+
+        .color-option:hover {
+            transform: scale(1.05);
+        }
+
+        .color-option.active {
+            border-color: var(--text-primary);
+        }
+
+        .color-option.active::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .color-label {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .qr-container {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+            min-height: 320px;
+            justify-content: center;
+        }
+
+        #qrcode {
+            position: relative;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: white;
+        }
+
+        #qrcode canvas {
+            display: block;
+        }
+
+        .dark-mode #qrcode {
+            background: #000000;
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+            width: 100%;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #000;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-color);
+            transform: translateY(-1px);
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            --bg-primary: #191919;
+            --bg-secondary: #252525;
+            --text-primary: #D4D4D4;
+            --text-secondary: #9B9B9B;
+            --border-color: #373737;
+        }
+
+        .dark-mode .logo-icon {
+            background: #D4D4D4;
+            color: #191919;
+        }
+
+        .dark-mode .btn-primary {
+            background: #D4D4D4;
+            color: #191919;
+        }
+
+        .dark-mode .btn-primary:hover {
+            background: #B0B0B0;
+        }
+
+        .placeholder {
+            color: var(--text-secondary);
+            text-align: center;
+            font-size: 18px;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+            
+            .color-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 12px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon">N</div>
+                <h1>Notion QR Code Generator</h1>
+            </div>
+            <p class="subtitle">Générez des QR codes professionnels avec votre branding Notion — parfait pour partager des liens, documents et espaces de travail.</p>
+        </div>
+
+        <div class="input-group">
+            <label for="url-input">Entrez votre URL</label>
+            <input type="url" id="url-input" placeholder="https://example.com" value="">
+        </div>
+
+        <div class="style-section">
+            <div class="style-header">
+                <label>Style</label>
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="light">Mode Clair</button>
+                    <button class="mode-btn" data-mode="dark">Mode Sombre</button>
+                </div>
+            </div>
+            
+            <div class="color-grid" id="color-grid">
+                <!-- Colors will be inserted here -->
+            </div>
+        </div>
+
+        <div class="qr-container">
+            <div id="qrcode-wrapper">
+                <p class="placeholder">Entrez une URL pour générer un QR code</p>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn btn-primary" id="download-btn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                </svg>
+                Télécharger QR Code
+            </button>
+            <button class="btn btn-secondary" id="copy-btn" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                Copier QR Code
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Color schemes
+        const colorSchemes = {
+            light: {
+                Default: { color: '#373530' },
+                Gray: { color: '#787774' },
+                Brown: { color: '#976D57' },
+                Orange: { color: '#CC782F' },
+                Yellow: { color: '#C29343' },
+                Green: { color: '#548164' },
+                Blue: { color: '#487CA5' },
+                Purple: { color: '#8A67AB' },
+                Pink: { color: '#B35488' },
+                Red: { color: '#C4554D' }
+            },
+            dark: {
+                Default: { color: '#D4D4D4' },
+                Gray: { color: '#9B9B9B' },
+                Brown: { color: '#A27763' },
+                Orange: { color: '#CB7B37' },
+                Yellow: { color: '#C19138' },
+                Green: { color: '#4F9768' },
+                Blue: { color: '#447ACB' },
+                Purple: { color: '#865DBB' },
+                Pink: { color: '#BA4A78' },
+                Red: { color: '#BE524B' }
+            }
+        };
+
+        let currentMode = 'light';
+        let currentColor = 'Default';
+        let qrcode = null;
+
+        // Initialize color grid
+        function initializeColorGrid() {
+            const colorGrid = document.getElementById('color-grid');
+            colorGrid.innerHTML = '';
+            
+            Object.keys(colorSchemes[currentMode]).forEach((colorName, index) => {
+                const colorData = colorSchemes[currentMode][colorName];
+                const colorDiv = document.createElement('div');
+                colorDiv.className = 'color-option' + (index === 0 ? ' active' : '');
+                colorDiv.style.backgroundColor = colorData.color;
+                colorDiv.dataset.color = colorName;
+                
+                const labelDiv = document.createElement('div');
+                labelDiv.className = 'color-label';
+                labelDiv.textContent = colorName;
+                
+                const wrapper = document.createElement('div');
+                wrapper.appendChild(colorDiv);
+                wrapper.appendChild(labelDiv);
+                
+                colorDiv.addEventListener('click', () => selectColor(colorName));
+                
+                colorGrid.appendChild(wrapper);
+            });
+        }
+
+        // Select color
+        function selectColor(colorName) {
+            currentColor = colorName;
+            document.querySelectorAll('.color-option').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelector(`[data-color="${colorName}"]`).classList.add('active');
+            generateQRCode();
+        }
+
+        // Mode toggle
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                currentMode = btn.dataset.mode;
+                document.body.classList.toggle('dark-mode', currentMode === 'dark');
+                
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                initializeColorGrid();
+                generateQRCode();
+            });
+        });
+
+        // Generate QR Code
+        function generateQRCode() {
+            const url = document.getElementById('url-input').value;
+            if (!url) return;
+
+            const wrapper = document.getElementById('qrcode-wrapper');
+            wrapper.innerHTML = '<div id="qrcode"></div>';
+            
+            const colorData = colorSchemes[currentMode][currentColor];
+            const bgColor = currentMode === 'light' ? '#FFFFFF' : '#000000';
+            
+            qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: url,
+                width: 256,
+                height: 256,
+                colorDark: colorData.color,
+                colorLight: bgColor,
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Enable buttons
+            document.getElementById('download-btn').disabled = false;
+            document.getElementById('copy-btn').disabled = false;
+        }
+
+        // URL input listener
+        document.getElementById('url-input').addEventListener('input', generateQRCode);
+
+        // Download QR Code
+        document.getElementById('download-btn').addEventListener('click', () => {
+            if (!qrcode) return;
+            
+            // Wait for QR code to be fully rendered
+            setTimeout(() => {
+                const canvas = document.querySelector('#qrcode canvas');
+                if (!canvas) return;
+                
+                // Create a temporary canvas to ensure proper download
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height;
+                const ctx = tempCanvas.getContext('2d');
+                
+                // Fill background
+                ctx.fillStyle = currentMode === 'light' ? '#FFFFFF' : '#000000';
+                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw QR code
+                ctx.drawImage(canvas, 0, 0);
+                
+                // Download
+                tempCanvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = 'notion-qrcode.png';
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                });
+            }, 100);
+        });
+
+        // Copy QR Code
+        document.getElementById('copy-btn').addEventListener('click', async () => {
+            if (!qrcode) return;
+            
+            const canvas = document.querySelector('#qrcode canvas');
+            
+            try {
+                const blob = await new Promise(resolve => canvas.toBlob(resolve));
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        'image/png': blob
+                    })
+                ]);
+                
+                // Visual feedback
+                const btn = document.getElementById('copy-btn');
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copié!';
+                btn.style.background = '#4CAF50';
+                btn.style.color = 'white';
+                
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.style.background = '';
+                    btn.style.color = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        });
+
+        // Initialize
+        initializeColorGrid();
+    </script>
+</body>
+</html>
